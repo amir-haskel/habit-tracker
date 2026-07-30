@@ -9,12 +9,10 @@ COPY libs/events /app/libs/events
 RUN pip install --no-cache-dir "./libs/events[rabbitmq]"
 
 COPY services/habit-core /app/services/habit-core
-RUN pip install --no-cache-dir ./services/habit-core
+RUN pip install --no-cache-dir "./services/habit-core[postgres]"
 
-# Store the SQLite DB on a mounted volume, run against the broker.
-ENV DATABASE_URL=sqlite:////data/habit_core.db \
-    EVENT_BUS=rabbitmq
-VOLUME ["/data"]
+# DATABASE_URL / EVENT_BUS / RABBITMQ_URL are provided by docker-compose.
+ENV EVENT_BUS=rabbitmq
 EXPOSE 8000
 
 CMD ["uvicorn", "habit_core.main:app", "--host", "0.0.0.0", "--port", "8000"]

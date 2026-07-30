@@ -2,8 +2,8 @@
 
 A habit-tracking app, built as a learning project and structured as microservices
 behind an nginx gateway. Backends are Python/FastAPI; the frontend is a React +
-Vite SPA. Datastores are SQLite for now (one per service), to be swapped for
-PostgreSQL later.
+Vite SPA. The docker-compose stack runs **PostgreSQL** (one database per service)
+and **RabbitMQ**; SQLite remains the default for tests and no-Docker local runs.
 
 ## Architecture
 
@@ -110,11 +110,15 @@ pytest tests/integration
 
 ## Status / roadmap
 
-- **Now:** habit-core + notifications + gateway; RabbitMQ events; SQLite per service.
+- **Now:** habit-core + notifications + gateway; RabbitMQ events; PostgreSQL
+  (one DB per service) in compose. Verified end-to-end locally: create/log a
+  habit → events over RabbitMQ → notifications react (habit.created +
+  streak.milestone), all persisted in Postgres.
 - **Design-forward UI not yet in the model:** weekly/`x-per-week` frequency
   ("Day 3/5"), time-of-day, reminders. The `frequency_type`/`frequency_config`
   columns and the `is_scheduled()` abstraction are in place for when these land.
-- **Next:** move stores to PostgreSQL; add a time-based reminder scheduler in the
-  notifications service (consuming `habit.logged` to suppress reminders once a
-  habit is done for the day); AWS deployment (services + managed broker + RDS).
+- **Next:** wire the frontend to the live API (it still uses mock data); add a
+  time-based reminder scheduler in the notifications service (consuming
+  `habit.logged` to suppress reminders once a habit is done for the day); AWS
+  deployment (services + managed broker + RDS).
 ```
