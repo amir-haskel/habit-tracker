@@ -1,0 +1,53 @@
+# Local end-to-end stack: gateway (SPA + reverse proxy) -> two services -> RabbitMQ.
+# Run from the repo root:  docker compose -f deploy/docker-compose.yml up --build
+# Then open http://localhost:8080
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"    # AMQP
+      - "15672:15672"  # management UI (guest/guest)
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  habit-core:
+    build:
+      context: ..
+      dockerfile: services/habit-core/Dockerfile
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - habit_core_data:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  notifications:
+    build:
+      context: ..
+      dockerfile: services/notifications/Dockerfile
+    environment:
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+    volumes:
+      - notifications_data:/data
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    ports:
+      - "8080:80"
+    depends_on:
+      - habit-core
+      - notifications
+
+volumes:
+  habit_core_data:
+  notifications_data:
