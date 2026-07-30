@@ -1,0 +1,63 @@
+/* Self-hosted Inter (no external CDN — nginx serves everything) */
+@import '@fontsource/inter/400.css';
+@import '@fontsource/inter/500.css';
+@import '@fontsource/inter/600.css';
+@import '@fontsource/inter/700.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply font-sans text-ink antialiased;
+    margin: 0;
+  }
+}
+
+@layer components {
+  /* Stark-white raised container against pastel backgrounds */
+  .card {
+    @apply rounded-card bg-white shadow-card;
+  }
+
+  /* Inset grouped list wrapper (Configuration view) */
+  .inset-group {
+    @apply rounded-card bg-white shadow-card overflow-hidden;
+  }
+
+  /* A single row inside an inset group, with a hairline divider */
+  .inset-row {
+    @apply flex items-center justify-between px-4 py-3.5 border-b border-slate-100 last:border-b-0;
+  }
+
+  /* Pill selector option */
+  .pill {
+    @apply px-4 py-2 rounded-pill text-sm font-medium transition-colors select-none cursor-pointer;
+  }
+  .pill-inactive {
+    @apply bg-slate-100 text-ink-faint;
+  }
+
+  /* Frosted-glass bottom navigation */
+  .frosted {
+    background-color: rgba(255, 255, 255, 0.72);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
+
+/* Hide scrollbars on horizontal scrollers while keeping scroll behavior */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
