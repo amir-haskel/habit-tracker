@@ -2,8 +2,8 @@
 
 Business code depends only on this interface, never on a concrete broker. That
 keeps the broker a swappable detail: InMemoryEventBus for tests and local runs,
-RabbitMQEventBus for docker-compose, and (later) an SNS/SQS or MSK adapter on
-AWS — none of which the service/handler code needs to know about.
+SnsEventBus (SNS publish, SQS consume) on AWS and in the LocalStack compose
+stack — none of which the service/handler code needs to know about.
 """
 
 from __future__ import annotations

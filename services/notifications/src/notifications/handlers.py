@@ -57,8 +57,9 @@ _DISPATCH = {
     STREAK_MILESTONE: handle_streak_milestone,
 }
 
-# Routing keys this service binds its queue to.
-ROUTING_KEYS = tuple(_DISPATCH.keys())
+# Event types this service handles. The SNS subscription's filter policy
+# (see docs/messaging.md) must list the same types.
+EVENT_TYPES = tuple(_DISPATCH.keys())
 
 
 def dispatch(db: Session, event: BaseEvent) -> None:

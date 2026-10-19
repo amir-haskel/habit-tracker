@@ -14,7 +14,7 @@ from notifications.schemas import NotificationRead
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     Base.metadata.create_all(bind=engine)
-    if settings.event_bus == "rabbitmq":
+    if settings.event_bus == "aws":
         # Embedded consumer: one process owns the SQLite store this phase.
         from notifications.consumer import start_consumer_thread
 

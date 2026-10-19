@@ -3,7 +3,8 @@
 These are the *public* wire format services agree on. Producers (habit-core)
 and consumers (notifications) both import these models, so a change here is a
 deliberate, reviewable contract change. Each event's ``event_type`` doubles as
-the broker routing key (e.g. "habit.logged").
+the SNS ``event_type`` message attribute that subscription filter policies
+match on (e.g. "habit.logged").
 """
 
 from __future__ import annotations
@@ -73,7 +74,7 @@ _EVENT_TYPES: dict[str, type[BaseEvent]] = {
 
 
 def parse_event(event_type: str, body: bytes | str) -> BaseEvent:
-    """Decode a raw broker message into the right typed event model."""
+    """Decode a raw message body into the right typed event model."""
     model = _EVENT_TYPES.get(event_type)
     if model is None:
         raise ValueError(f"Unknown event_type: {event_type}")

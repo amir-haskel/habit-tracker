@@ -1,5 +1,5 @@
-# Local end-to-end stack: gateway (SPA + reverse proxy) -> services -> RabbitMQ,
-# with PostgreSQL (one database per service) as the datastore.
+# Local end-to-end stack: gateway (SPA + reverse proxy) -> services -> SNS/SQS
+# (emulated by LocalStack), with PostgreSQL (one database per service) as the datastore.
 # Run from the repo root:  docker compose -f deploy/docker-compose.yml up --build
 # Then open http://localhost:8080
 
@@ -21,16 +21,22 @@ services:
       timeout: 5s
       retries: 10
 
-  rabbitmq:
-    image: rabbitmq:3-management
+  # SNS + SQS emulation. The init script creates the topic, queues and
+  # subscription (see docs/messaging.md); the healthcheck waits for it to finish.
+  localstack:
+    image: localstack/localstack:3.8
+    environment:
+      SERVICES: sns,sqs
+      AWS_DEFAULT_REGION: us-east-1
+    volumes:
+      - ./localstack/init-aws.sh:/etc/localstack/init/ready.d/init-aws.sh:ro
     ports:
-      - "5672:5672"    # AMQP
-      - "15672:15672"  # management UI (guest/guest)
+      - "4566:4566"
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 10s
+      test: ["CMD-SHELL", "test -f /tmp/init-complete"]
+      interval: 5s
       timeout: 5s
-      retries: 10
+      retries: 20
 
   habit-core:
     build:
@@ -38,11 +44,17 @@ services:
       dockerfile: services/habit-core/Dockerfile
     environment:
       DATABASE_URL: postgresql+psycopg://habit:habit@postgres:5432/habit_core
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      EVENT_BUS: aws
+      SNS_TOPIC_ARN: arn:aws:sns:us-east-1:000000000000:habit-tracker-events
+      AWS_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://localstack:4566
+      # Dummy credentials for LocalStack only; on AWS the ECS task role supplies them.
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
+      localstack:
         condition: service_healthy
 
   notifications:
@@ -51,11 +63,17 @@ services:
       dockerfile: services/notifications/Dockerfile
     environment:
       DATABASE_URL: postgresql+psycopg://habit:habit@postgres:5432/notifications
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672/
+      EVENT_BUS: aws
+      SQS_QUEUE_URL: http://localstack:4566/000000000000/habit-tracker-notifications
+      AWS_REGION: us-east-1
+      AWS_ENDPOINT_URL: http://localstack:4566
+      # Dummy credentials for LocalStack only; on AWS the ECS task role supplies them.
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
+      localstack:
         condition: service_healthy
 
   gateway:

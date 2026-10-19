@@ -1,7 +1,7 @@
 """End-to-end event-contract test across services.
 
 Wires habit-core's publisher to notifications' handlers through a single
-InMemoryEventBus — the same typed events RabbitMQ would carry — and asserts the
+InMemoryEventBus — the same typed events SNS/SQS would carry — and asserts the
 notifications service reacts correctly. Requires both packages installed
 (editable): pip install -e libs/events -e services/habit-core -e services/notifications
 """
@@ -27,7 +27,7 @@ from habit_core.services.logging_service import LoggingService
 # notifications (consumer)
 import notifications.models  # noqa: F401 — register models
 from notifications.db import Base as NotifBase
-from notifications.handlers import ROUTING_KEYS, dispatch
+from notifications.handlers import EVENT_TYPES, dispatch
 from notifications.repository import NotificationRepository
 
 
@@ -46,8 +46,8 @@ def wired():
     habit_db = _in_memory_session(HabitBase)
     notif_db = _in_memory_session(NotifBase)
 
-    for routing_key in ROUTING_KEYS:
-        bus.subscribe(routing_key, lambda event: dispatch(notif_db, event))
+    for event_type in EVENT_TYPES:
+        bus.subscribe(event_type, lambda event: dispatch(notif_db, event))
 
     return bus, habit_db, notif_db
 

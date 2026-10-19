@@ -1,4 +1,4 @@
-"""RabbitMQ consumer wiring.
+"""SQS consumer wiring.
 
 Can run two ways:
   * embedded — ``start_consumer_thread()`` is called from the API's lifespan so
@@ -16,7 +16,7 @@ from habit_events import BaseEvent
 
 from notifications.config import settings
 from notifications.db import Base, SessionLocal, engine
-from notifications.handlers import ROUTING_KEYS, dispatch
+from notifications.handlers import dispatch
 
 
 def _handle(event: BaseEvent) -> None:
@@ -28,13 +28,15 @@ def _handle(event: BaseEvent) -> None:
 
 
 def run_consumer() -> None:
-    """Blocking consume loop against RabbitMQ."""
-    from habit_events.rabbitmq import consume
+    """Blocking consume loop against the SQS queue."""
+    from habit_events.aws import consume
 
-    consume(settings.rabbitmq_url, settings.consumer_queue, ROUTING_KEYS, _handle)
+    consume(settings.sqs_queue_url, _handle, region_name=settings.aws_region)
 
 
 def start_consumer_thread() -> threading.Thread:
+    if not settings.sqs_queue_url:
+        raise RuntimeError("EVENT_BUS=aws requires SQS_QUEUE_URL")
     thread = threading.Thread(target=run_consumer, name="notif-consumer", daemon=True)
     thread.start()
     return thread
