@@ -45,7 +45,9 @@ The transport is hidden behind an `EventBus` interface (`libs/events`), so it's 
 swappable detail — `InMemoryEventBus` for tests/local, `SnsEventBus` (SNS publish,
 SQS consume) in compose (LocalStack) and on AWS — without touching business logic.
 The exact AWS resources, subscription settings, IAM and env vars the app expects
-are specified in [`docs/messaging.md`](docs/messaging.md).
+are specified in [`docs/messaging.md`](docs/messaging.md); the database variables
+(`DATABASE_URL`, or `DB_HOST`/`DB_NAME`/`DB_USER`/`DB_PASSWORD`/`DB_SSLMODE`) and
+the notifications database bootstrap job in [`docs/database.md`](docs/database.md).
 
 ## Layout
 
@@ -59,6 +61,7 @@ services/
 frontend/               React + Vite + Tailwind SPA (see frontend/README.md)
 deploy/                 nginx.conf, docker-compose.yml, localstack/ (SNS/SQS init script)
 docs/messaging.md       The app <-> AWS messaging contract (resource names, IAM, env vars)
+docs/database.md        The app <-> PostgreSQL/RDS contract (DB_* env vars, secrets, TLS, bootstrap job)
 tests/integration/      Cross-service event-contract test (in-process, no broker)
 ```
 

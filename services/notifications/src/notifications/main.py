@@ -13,6 +13,11 @@ from notifications.schemas import NotificationRead
 
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+    if settings.create_database_on_startup:
+        # Must run before create_all: the database has to exist to connect to it.
+        from notifications.bootstrap_db import ensure_app_database
+
+        ensure_app_database(settings)
     Base.metadata.create_all(bind=engine)
     if settings.event_bus == "aws":
         # Embedded consumer: one process owns the SQLite store this phase.
