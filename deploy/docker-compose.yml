@@ -80,6 +80,12 @@ services:
     build:
       context: ..
       dockerfile: deploy/Dockerfile
+    # These are the image's defaults, repeated here as documentation. On AWS they
+    # become the Cloud Map names and the VPC resolver (see docs/gateway.md).
+    environment:
+      DNS_RESOLVER: 127.0.0.11
+      HABIT_CORE_UPSTREAM: habit-core:8000
+      NOTIFICATIONS_UPSTREAM: notifications:8000
     ports:
       - "8080:80"
     depends_on:
