@@ -26,7 +26,7 @@ provider "aws" {
 }
 
 resource "aws_ecr_repository" "habit" {
-  for_each = toset(["habit-core", "notifications"])
+  for_each = toset(["habit-core", "notifications", "gateway"])
 
   name                 = "habit-tracker/${each.key}"
   image_tag_mutability = "IMMUTABLE"
