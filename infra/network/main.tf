@@ -25,8 +25,14 @@ provider "aws" {
   }
 }
 
+variable "allowed_cidr" {
+  type        = string
+  description = "Public IP (as x.x.x.x/32) allowed to reach the load balancer"
+}
+
 resource "aws_vpc" "main" {
-  cidr_block = "10.0.0.0/16"
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
   tags = {
     Name = "habit-tracker-vpc"
   }
